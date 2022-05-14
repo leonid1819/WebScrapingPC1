@@ -2,6 +2,7 @@ from xml.etree.ElementTree import canonicalize
 from requests_html import HTMLSession
 from bs4 import BeautifulSoup as bs # importar bs
 from googleapiclient.discovery import build
+import requests
 import gspread
 import json
 import re
@@ -20,6 +21,19 @@ fcomm='I'
 
 api_key ="AIzaSyCFynPLwBDrOk6oo5zQUYtWcjLagwVbBr8"
 resource = build('youtube', 'v3', developerKey=api_key)
+
+def getShadowLikes(video_id,worksheet,fila):
+    url="https://returnyoutubedislikeapi.com/votes?videoId="+video_id
+    response=requests.get(url).text
+    json_data=json.loads(response)
+    worksheet.update(flike+f"{fila}", json_data['likes'])
+
+
+def getShadowDislikes(video_id,worksheet,fila):
+    url="https://returnyoutubedislikeapi.com/votes?videoId="+video_id
+    response=requests.get(url).text
+    json_data=json.loads(response)
+    worksheet.update(fdislk+f"{fila}", json_data['dislikes'])
 
 
 def getComentarios(video_id,worksheet,fila):
@@ -46,7 +60,7 @@ def getComentarios(video_id,worksheet,fila):
 
 
 
-def getData(video_id,worksheet,fila,):
+def getData(video_id,worksheet,fila):
 
     url="https://www.youtube.com/watch?v="+video_id
 
@@ -69,11 +83,12 @@ def getData(video_id,worksheet,fila,):
     
     likes_label_aux = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['accessibilityData']['accessibilityData']['label']
     if likes_label_aux == "Me gusta":
-        likes = "oculto"
+        getShadowLikes(video_id,worksheet,fila)
     else:
         likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
         likes_str = likes_label.split(' ')[0].replace(',','')
         likes= '0' if likes_str == 'No' else likes_str
+        worksheet.update(flike+f"{fila}", likes)
     #likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
     #likes_str = likes_label.split(' ')[0].replace(',','')
     #likes= '0' if likes_str == 'No' else likes_str
@@ -81,7 +96,7 @@ def getData(video_id,worksheet,fila,):
     worksheet.update(ftit+f"{fila}", titulo)
     worksheet.update(fdesc+f"{fila}", descripcion)
     worksheet.update(fcana+f"{fila}", canal)
-    worksheet.update(flike+f"{fila}", likes)
+    
 
 
 def scraping(filaI,worksheet):
@@ -89,6 +104,7 @@ def scraping(filaI,worksheet):
     aux=True
     while aux:
         video_id=worksheet.acell('D'+f"{filaI}").value
+        getShadowDislikes(video_id,worksheet,filaI)
         getComentarios(video_id,worksheet,filaI)
         getData(video_id,worksheet,filaI)
         filaI=filaI+1
