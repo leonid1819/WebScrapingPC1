@@ -1,3 +1,26 @@
+from xml.etree.ElementTree import canonicalize
+from requests_html import HTMLSession
+from bs4 import BeautifulSoup as bs # importar bs
+from googleapiclient.discovery import build
+import gspread
+import json
+import re
+
+url="https://www.youtube.com/watch?v=VBDeOgT1iAs"
+
+
+session = HTMLSession()
+
+response = session.get(url)
+
+response.html.render(sleep=1,timeout=60)
+
+soup = bs(response.html.html, "html.parser")
+data = re.search(r"var ytInitialData = ({.*?});", soup.prettify()).group(1)
+with open ("singularVideoJson.txt","w",encoding="utf-8") as output:
+    output.write(data)
+
+
 """import requests
 from bs4 import BeautifulSoup
 import re

@@ -40,7 +40,8 @@ def getComentarios(video_id,worksheet,fila):
         #the top level comment can have sub reply comments
         topLevelComment = item_info["topLevelComment"]
         comment_info = topLevelComment["snippet"]
-        total=comment_info["textDisplay"]+" "
+        total=total+comment_info["textDisplay"]+"{comentario}"
+    total=total+"auxiliar"
     worksheet.update(fcomm+f"{fila}", total)
 
 
@@ -65,10 +66,17 @@ def getData(video_id,worksheet,fila,):
     data_json = json.loads(data)
     videoPrimaryInfoRenderer = data_json['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0]['videoPrimaryInfoRenderer']
     videoSecondaryInfoRenderer = data_json['contents']['twoColumnWatchNextResults']['results']['results']['contents'][1]['videoSecondaryInfoRenderer']
-        
-    likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
-    likes_str = likes_label.split(' ')[0].replace(',','')
-    likes= '0' if likes_str == 'No' else likes_str
+    
+    likes_label_aux = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['accessibilityData']['accessibilityData']['label']
+    if likes_label_aux == "Me gusta":
+        likes = "oculto"
+    else:
+        likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
+        likes_str = likes_label.split(' ')[0].replace(',','')
+        likes= '0' if likes_str == 'No' else likes_str
+    #likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
+    #likes_str = likes_label.split(' ')[0].replace(',','')
+    #likes= '0' if likes_str == 'No' else likes_str
     dislikes='UNKNOWN'
     worksheet.update(ftit+f"{fila}", titulo)
     worksheet.update(fdesc+f"{fila}", descripcion)
