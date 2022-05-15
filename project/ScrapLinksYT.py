@@ -18,6 +18,7 @@ soup = BeautifulSoup(response, 'lxml')
 script = soup.find_all("script")[34]
 json_text = re.search('var ytInitialData = (.+)[,;]{1}',str(script)).group(1)
 
+
 json_data = json.loads(json_text)
 
 content = (

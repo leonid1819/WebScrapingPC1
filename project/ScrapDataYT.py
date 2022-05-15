@@ -40,12 +40,12 @@ def getComentarios(video_id,worksheet,fila):
     request = resource. commentThreads().list(
                             part="snippet",
                             videoId=video_id,
-                            maxResults= 10,   #get 20 comments
+                            maxResults= 10,   
                             order="orderUnspecified")  #top comments.
     #execute the request
     response =request.execute()
 
-    #get first 10 items for from 20 comments 
+    #get first 
     items = response["items"][:10]
     total=""
     for item in items:
@@ -55,7 +55,7 @@ def getComentarios(video_id,worksheet,fila):
         topLevelComment = item_info["topLevelComment"]
         comment_info = topLevelComment["snippet"]
         total=total+comment_info["textDisplay"]+"{comentario}"
-    total=total+"auxiliar"
+    total=total+"axuliar"
     worksheet.update(fcomm+f"{fila}", total)
 
 
@@ -86,13 +86,11 @@ def getData(video_id,worksheet,fila):
         getShadowLikes(video_id,worksheet,fila)
     else:
         likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
-        likes_str = likes_label.split(' ')[0].replace(',','')
+        likes_str = likes_label.split()[0].replace(',','')
         likes= '0' if likes_str == 'No' else likes_str
-        worksheet.update(flike+f"{fila}", likes)
-    #likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
-    #likes_str = likes_label.split(' ')[0].replace(',','')
-    #likes= '0' if likes_str == 'No' else likes_str
-    dislikes='UNKNOWN'
+        worksheet.update(flike+f"{fila}", int(likes))
+   
+    
     worksheet.update(ftit+f"{fila}", titulo)
     worksheet.update(fdesc+f"{fila}", descripcion)
     worksheet.update(fcana+f"{fila}", canal)
