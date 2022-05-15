@@ -8,28 +8,35 @@ import json
 import re
 
 
+gc = gspread.service_account(filename='webscrapingurls-8c796a18ea3a.json')
+sh = gc.open("ComentariosyLikes")
+worksheet = sh.get_worksheet(0)
+fcom='D'
+flik='E'
 
+api_key ="AIzaSyCFynPLwBDrOk6oo5zQUYtWcjLagwVbBr8"
+resource = build('youtube', 'v3', developerKey=api_key)
 
-url="https://www.youtube.com/watch?v=l3PqcOhlQ8g"
+aux=True
+fila=34
+while aux:
+    video_id=worksheet.acell('C'+f"{fila}").value
+    url="https://returnyoutubedislikeapi.com/votes?videoId="+video_id
 
+    response=requests.get(url).text
+    json_data=json.loads(response)
 
-session = HTMLSession()
+    worksheet.update(flik+f"{fila}", json_data['likes'])
 
-response = session.get(url)
+    request = resource. videos().list(part="statistics",
+                                        id=video_id)
+    #execute the request
+    response =request.execute()
+    
+    worksheet.update(fcom+f"{fila}", response['items'][0]['statistics']['commentCount'])
 
-response.html.render(sleep=1,timeout=60)
-
-soup = bs(response.html.html, "html.parser")
-
-data = re.search(r"var ytInitialData = ({.*?});", soup.prettify()).group(1)
-data_json = json.loads(data)
-videoPrimaryInfoRenderer = data_json['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0]['videoPrimaryInfoRenderer']
-videoSecondaryInfoRenderer = data_json['contents']['twoColumnWatchNextResults']['results']['results']['contents'][1]['videoSecondaryInfoRenderer']
-
-likes_label_aux = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['accessibilityData']['accessibilityData']['label']
-
-likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
-likes_str = likes_label.split()[0].replace(',','')
-likes= '0' if likes_str == 'No' else likes_str
-print(likes)
+    fila=fila+1
+    aux1=worksheet.acell('c'+f"{fila}").value
+    if(aux1 == None):
+        aux=False
 
