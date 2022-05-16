@@ -41,17 +41,17 @@ def getComentarios(video_id,worksheet,fila):
                             part="snippet",
                             videoId=video_id,
                             maxResults= 10,   
-                            order="orderUnspecified")  #top comments.
-    #execute the request
+                            order="orderUnspecified")  
+   
     response =request.execute()
 
-    #get first 
+     
     items = response["items"][:10]
     total=""
     for item in items:
         item_info = item["snippet"]
         
-        #the top level comment can have sub reply comments
+       
         topLevelComment = item_info["topLevelComment"]
         comment_info = topLevelComment["snippet"]
         total=total+comment_info["textDisplay"]+"{comentario}"
@@ -78,14 +78,21 @@ def getData(video_id,worksheet,fila):
     canal=soup.find("span", itemprop="author").next.next['content']
     data = re.search(r"var ytInitialData = ({.*?});", soup.prettify()).group(1)
     data_json = json.loads(data)
-    videoPrimaryInfoRenderer = data_json['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0]['videoPrimaryInfoRenderer']
-    videoSecondaryInfoRenderer = data_json['contents']['twoColumnWatchNextResults']['results']['results']['contents'][1]['videoSecondaryInfoRenderer']
+    videoPrimaryInfoRenderer = data_json['contents']['twoColumnWatchNextResults']
+    ['results']['results']['contents'][0]['videoPrimaryInfoRenderer']
+    videoSecondaryInfoRenderer = data_json['contents']
+    ['twoColumnWatchNextResults']['results']['results']['contents'][1]
+    ['videoSecondaryInfoRenderer']
     
-    likes_label_aux = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['accessibilityData']['accessibilityData']['label']
+    likes_label_aux = videoPrimaryInfoRenderer['videoActions']
+    ['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']
+    ['accessibilityData']['accessibilityData']['label']
     if likes_label_aux == "Me gusta":
         getShadowLikes(video_id,worksheet,fila)
     else:
-        likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']['accessibility']['accessibilityData']['label'] # "No likes" or "###,###"
+        likes_label = videoPrimaryInfoRenderer['videoActions']['menuRenderer']
+        ['topLevelButtons'][0]['toggleButtonRenderer']['defaultText']
+        ['accessibility']['accessibilityData']['label'] 
         likes_str = likes_label.split()[0].replace(',','')
         likes= '0' if likes_str == 'No' else likes_str
         worksheet.update(flike+f"{fila}", int(likes))
